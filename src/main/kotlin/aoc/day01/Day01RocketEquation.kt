@@ -5,8 +5,8 @@ import aoc.utils.Utils
 typealias Mass = Long
 typealias FuelRequirement = Long
 
-fun task1(masses: Collection<Mass>) = sumOfFuelRequirements(masses, ::moduleFuelRequirements)
-fun task2(masses: Collection<Mass>) = sumOfFuelRequirements(masses, ::totalFuelRequirements)
+fun task1(masses: Collection<Mass>) = sumOfFuelRequirements(masses, ::moduleFuelRequirement)
+fun task2(masses: Collection<Mass>) = sumOfFuelRequirements(masses, ::totalFuelRequirement)
 
 private fun sumOfFuelRequirements(masses: Collection<Mass>, algorithm: (Mass) -> FuelRequirement): FuelRequirement {
     return masses.map(algorithm).sum()
@@ -15,14 +15,14 @@ private fun sumOfFuelRequirements(masses: Collection<Mass>, algorithm: (Mass) ->
 
 private fun FuelRequirement.isNegativeRequirement() = this < 0
 
-internal fun moduleFuelRequirements(mass: Mass): FuelRequirement = mass / 3 - 2
+internal fun moduleFuelRequirement(mass: Mass): FuelRequirement = mass / 3 - 2
 
-internal fun totalFuelRequirements(mass: Mass): FuelRequirement {
+internal fun totalFuelRequirement(mass: Mass): FuelRequirement {
     fun fuelRequirement(currentMass: Mass, sum: FuelRequirement): FuelRequirement {
-        val moduleFuelRequirements = moduleFuelRequirements(currentMass)
-        if (moduleFuelRequirements.isNegativeRequirement())
+        val fuelRequirement = moduleFuelRequirement(currentMass)
+        if (fuelRequirement.isNegativeRequirement())
             return sum
-        return fuelRequirement(moduleFuelRequirements, sum + moduleFuelRequirements)
+        return fuelRequirement(fuelRequirement, sum + fuelRequirement)
 
     }
     return fuelRequirement(mass, 0)
