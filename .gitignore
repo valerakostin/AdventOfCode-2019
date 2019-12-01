@@ -1,23 +1,31 @@
-# Compiled class file
-*.class
+# Ignore Gradle project-specific cache directory
+.gradle
 
-# Log file
-*.log
-
-# BlueJ files
-*.ctxt
-
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
-# Package Files #
-*.jar
-*.war
-*.nar
-*.ear
-*.zip
-*.tar.gz
-*.rar
-
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
+# Ignore Gradle build output directory
+build
+/AdventOfCode-2019.iml
+/.idea/libraries/Gradle__junit_junit_4_12.xml
+/.idea/libraries/Gradle__org_hamcrest_hamcrest_core_1_3.xml
+/.idea/libraries/Gradle__org_jetbrains_annotations_13_0.xml
+/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_stdlib_1_3_21.xml
+/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_stdlib_common_1_3_21.xml
+/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_stdlib_jdk7_1_3_21.xml
+/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_stdlib_jdk8_1_3_21.xml
+/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_test_1_3_21.xml
+/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_test_annotations_common_1_3_21.xml
+/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_test_common_1_3_21.xml
+/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_test_junit_1_3_21.xml
+/.idea/modules/AdventOfCode-2019.main.iml
+/.idea/modules/AdventOfCode-2019.test.iml
+/.idea/$CACHE_FILE$
+/.idea/$PRODUCT_WORKSPACE_FILE$
+/.idea/.gitignore
+/.idea/compiler.xml
+/.idea/dictionaries
+/.idea/encodings.xml
+/.idea/gradle.xml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/vcs.xml
+/gradle/wrapper/gradle-wrapper.jar
+/gradle/wrapper/gradle-wrapper.properties
