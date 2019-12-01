@@ -12,7 +12,6 @@ private fun sumOfFuelRequirements(masses: Collection<Mass>, algorithm: (Mass) ->
     return masses.map(algorithm).sum()
 }
 
-
 private fun FuelRequirement.isNegativeRequirement() = this < 0
 
 internal fun moduleFuelRequirement(mass: Mass): FuelRequirement = mass / 3 - 2
@@ -23,7 +22,6 @@ internal fun totalFuelRequirement(mass: Mass): FuelRequirement {
         if (fuelRequirement.isNegativeRequirement())
             return sum
         return fuelRequirement(fuelRequirement, sum + fuelRequirement)
-
     }
     return fuelRequirement(mass, 0)
 }
