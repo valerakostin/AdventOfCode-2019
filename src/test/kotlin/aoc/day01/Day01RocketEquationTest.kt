@@ -20,41 +20,41 @@ internal class Day01RocketEquationTest {
 
     @Test
     fun `test fuel requirements for mass 12`() {
-        assertEquals(2, moduleFuelRequirements(12))
+        assertEquals(2, moduleFuelRequirement(12))
     }
 
     @Test
     fun `test fuel requirements for mass 14`() {
-        assertEquals(2, moduleFuelRequirements(14))
+        assertEquals(2, moduleFuelRequirement(14))
     }
 
     @Test
     fun `test fuel requirements for mass 1969`() {
-        assertEquals(654, moduleFuelRequirements(1969))
+        assertEquals(654, moduleFuelRequirement(1969))
     }
 
     @Test
     fun `test fuel requirements for mass 100756`() {
-        assertEquals(33583, moduleFuelRequirements(100756))
+        assertEquals(33583, moduleFuelRequirement(100756))
     }
 
     @Test
     fun `test total fuel requirements for mass 12`() {
-        assertEquals(2, totalFuelRequirements(12))
+        assertEquals(2, totalFuelRequirement(12))
     }
 
     @Test
     fun `test total fuel requirements for mass 14`() {
-        assertEquals(2, totalFuelRequirements(14))
+        assertEquals(2, totalFuelRequirement(14))
     }
 
     @Test
     fun `test total fuel requirements for mass 1969`() {
-        assertEquals(966, totalFuelRequirements(1969))
+        assertEquals(966, totalFuelRequirement(1969))
     }
 
     @Test
     fun `test total fuel requirements for mass 100756`() {
-        assertEquals(50346, totalFuelRequirements(100756))
+        assertEquals(50346, totalFuelRequirement(100756))
     }
 }
