@@ -1,7 +1,7 @@
 package aoc.day02
 
-import aoc.Computer
-import aoc.Intcode
+import aoc.utils.Computer
+import aoc.utils.Intcode
 import aoc.utils.Utils
 
 

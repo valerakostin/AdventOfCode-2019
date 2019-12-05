@@ -1,6 +1,6 @@
 package aoc.day02
 
-import aoc.Computer
+import aoc.utils.Computer
 import aoc.utils.Utils
 import org.junit.Test
 import kotlin.test.assertEquals

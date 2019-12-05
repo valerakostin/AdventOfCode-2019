@@ -1,4 +1,4 @@
-package aoc
+package aoc.utils
 
 
 typealias Intcode = MutableList<Int>
