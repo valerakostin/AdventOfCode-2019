@@ -64,10 +64,9 @@ class Computer(private val program: Intcode, private val input: Int) {
     private fun inputCommand() = inOutCommand { program[it] = input }
 
     private fun isEquals(modes: String) = compareCommand(modes) { x, y -> x == y }
-
     private fun isLessThan(modes: String) = compareCommand(modes) { x, y -> x < y }
-    private fun jumpIfFalse(modes: String) = jumpCommand(modes) { it == 0 }
 
+    private fun jumpIfFalse(modes: String) = jumpCommand(modes) { it == 0 }
     private fun jumpIfTrue(modes: String) = jumpCommand(modes) { it != 0 }
 
     private fun mathCommand(modes: String, op: (Int, Int) -> Int) {
