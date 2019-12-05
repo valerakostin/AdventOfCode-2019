@@ -1,4 +1,4 @@
-package aoc.day02
+package aoc
 
 import org.junit.Test
 import kotlin.test.assertEquals

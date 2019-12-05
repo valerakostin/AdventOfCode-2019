@@ -1,8 +1,10 @@
 package aoc.day02
 
+import aoc.Computer
+import aoc.Intcode
 import aoc.utils.Utils
 
-typealias Intcode = MutableList<Int>
+
 
 fun main() {
     val program = Utils.lineFromResource("InputDay02.txt")
@@ -20,38 +22,6 @@ fun main() {
                Task2: $task2
             """.trimIndent())
 }
-
-class Computer(private val program: Intcode) {
-    private var counter = 0
-
-    fun execute() {
-        while (!program[counter].isHaltOpcode()) {
-            when (program[counter]) {
-                1 -> addCommand()
-                2 -> mulCommand()
-                else -> throw IllegalArgumentException()
-            }
-        }
-    }
-
-    private fun executeCommand(op: (Int, Int) -> Int) {
-        val operand1Address = program[counter + 1]
-        val operand2Address = program[counter + 2]
-        val resultAddress = program[counter + 3]
-        program[resultAddress] = op(program[operand1Address], program[operand2Address])
-        counter += 4
-    }
-
-    private fun addCommand() {
-        executeCommand { o1, o2 -> o1 + o2 }
-    }
-
-    private fun mulCommand() {
-        executeCommand { o1, o2 -> o1 * o2 }
-    }
-}
-
-private fun Int.isHaltOpcode() = this == 99
 
 
 fun task1(program: Intcode): Int {
