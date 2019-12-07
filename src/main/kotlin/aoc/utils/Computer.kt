@@ -3,11 +3,13 @@ package aoc.utils
 
 typealias Intcode = MutableList<Int>
 
-class Computer(private val program: Intcode, private val input: Int = 0) {
+class Computer(private val program: Intcode, private val input: Int = 0, private val inputSupplier: ((Int) -> Int)? = null) {
     private var counter = 0
     private var lastOutput = 0
+    private var inputCounter = 0
 
     fun execute() {
+        counter = 0
         while (!program[counter].isHaltOpcode()) {
             val opcode = program[counter]
             when {
@@ -40,7 +42,12 @@ class Computer(private val program: Intcode, private val input: Int = 0) {
     private fun mulCommand(mode: String) = mathCommand(mode) { o1, o2 -> o1 * o2 }
 
     private fun outputCommand() = inOutCommand { lastOutput = program[it] }
-    private fun inputCommand() = inOutCommand { program[it] = input }
+    private fun inputCommand() {
+        if (inputSupplier != null)
+            inOutCommand { program[it] = inputSupplier.invoke(inputCounter) }
+        else
+            inOutCommand { program[it] = input }
+    }
 
     private fun isEquals(modes: String) = compareCommand(modes) { x, y -> x == y }
     private fun isLessThan(modes: String) = compareCommand(modes) { x, y -> x < y }
@@ -62,6 +69,7 @@ class Computer(private val program: Intcode, private val input: Int = 0) {
         val operand1Address = program[counter + 1]
         action(operand1Address)
         counter += 2
+        inputCounter += 1
     }
 
     private fun jumpCommand(modes: String, condition: (Int) -> Boolean) {
