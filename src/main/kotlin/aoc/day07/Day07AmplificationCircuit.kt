@@ -1,20 +1,16 @@
 package aoc.day07
 
 import aoc.utils.Computer
-import aoc.utils.Utils
 import java.util.*
 
 
 fun main() {
 
-    val program = Utils.lineFromResource("InputDay07.txt")
-            .split(",")
-            .map { it.toInt() }
-            .toMutableList()
+    val program = Computer.ProgramReader.readProgram("InputDay07.txt")
 
     val task1 = task1(program)
     println(task1)
-    val task2 = null//task2(program)
+    val task2 = task2(program)
 
     println(
             """
@@ -24,10 +20,52 @@ fun main() {
             """.trimIndent())
 }
 
+
 fun task1(program: MutableList<Int>): Pair<Int, List<Int>>? {
     val sequence = mutableListOf(0, 1, 2, 3, 4)
     val permute = permute(sequence)
     return permute.map { Pair(processSequence(program, it), it) }.maxBy { it.first }
+}
+
+fun task2(program: MutableList<Int>): Pair<Int, List<Int>>? {
+
+    val sequence = mutableListOf(5, 6, 7, 8, 9)
+    val permute = permute(sequence)
+    return permute.map { Pair(processSequenceWithFeedback(program, it), it) }.maxBy { it.first }
+}
+
+internal fun processSequenceWithFeedback(program: MutableList<Int>, sequence: List<Int>): Int {
+
+    val amps = (0 until sequence.size)
+            .map { Computer(program.toMutableList(), resumeOnOutput = true) }.toList()
+
+    (0 until sequence.size).map {
+        amps[it].inputSupplier = createSupplier(amps, it, sequence[it])
+    }
+
+    while (!amps.all { it.isReady() }) {
+        amps.filter { !it.isReady() }.map { it.resume(); it.execute() }
+    }
+    return amps.last().output()
+}
+
+private fun createSupplier(amps: List<Computer>, index: Int, phase: Int): (Int) -> Int {
+    return if (index == 0) {
+        { i: Int ->
+            when {
+                i == 1 -> 0
+                i % 2 == 0 -> phase
+                else -> amps[amps.size - 1].output()
+            }
+        }
+    } else {
+        { i: Int ->
+            when {
+                i % 2 == 0 -> phase
+                else -> amps[index - 1].output()
+            }
+        }
+    }
 }
 
 internal fun processSequence(program: MutableList<Int>, sequence: List<Int>): Int {

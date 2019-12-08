@@ -3,14 +3,15 @@ package aoc.utils
 
 typealias Intcode = MutableList<Int>
 
-class Computer(private val program: Intcode, private val input: Int = 0, private val inputSupplier: ((Int) -> Int)? = null) {
+class Computer(private val program: Intcode, private val input: Int = 0, var inputSupplier: ((Int) -> Int)? = null, val resumeOnOutput: Boolean = false) {
     private var counter = 0
     private var lastOutput = 0
     private var inputCounter = 0
+    private var isReady = false
+    private var pause = false
 
     fun execute() {
-        counter = 0
-        while (!program[counter].isHaltOpcode()) {
+        while (!program[counter].isHaltOpcode() && !pause) {
             val opcode = program[counter]
             when {
                 opcode.isAddOpCode() -> addCommand(opcode.opCodePositions())
@@ -24,6 +25,8 @@ class Computer(private val program: Intcode, private val input: Int = 0, private
                 else -> throw IllegalArgumentException(opcode.opCodePositions())
             }
         }
+        if (program[counter].isHaltOpcode())
+            isReady = true
     }
 
     private fun Int.opCodePositions() = this.toString().padStart(5, '0').substring(0, 3).reversed()
@@ -41,10 +44,23 @@ class Computer(private val program: Intcode, private val input: Int = 0, private
     private fun addCommand(mode: String) = mathCommand(mode) { o1, o2 -> o1 + o2 }
     private fun mulCommand(mode: String) = mathCommand(mode) { o1, o2 -> o1 * o2 }
 
-    private fun outputCommand() = inOutCommand { lastOutput = program[it] }
+    private fun outputCommand() {
+        inOutCommand { lastOutput = program[it] }
+        if (resumeOnOutput)
+            pause = true
+    }
+
+    fun isReady() = isReady
+
+
+    fun resume() {
+        pause = false
+    }
+
+
     private fun inputCommand() {
         if (inputSupplier != null)
-            inOutCommand { program[it] = inputSupplier.invoke(inputCounter) }
+            inOutCommand { program[it] = inputSupplier!!.invoke(inputCounter) }
         else
             inOutCommand { program[it] = input }
     }
@@ -101,4 +117,13 @@ class Computer(private val program: Intcode, private val input: Int = 0, private
     }
 
     fun output() = lastOutput
+
+    object ProgramReader {
+        fun readProgram(resource: String): Intcode {
+            return Utils.lineFromResource(resource)
+                    .split(",")
+                    .map { it.toInt() }
+                    .toMutableList()
+        }
+    }
 }
