@@ -1,6 +1,12 @@
 # AdventOfCode-2019
 Solutions to the [Advent Of Code 2019](https://adventofcode.com/2019) puzzles in Kotlin
 
+#### Disclaimer
+
+In my solutions I tend to experiment with methodologies, programming styles and aspects of the language
+which are not a part of my daily job. That means that some solutions may look overengineered
+and not idiomatic, but they still return correct answers.
+
 |Day| Puzzle| Solution|
 |---|:-------|---------|
 |1  |[The Tyranny of the Rocket Equation](https://adventofcode.com/2019/day/1))|[Code](https://github.com/valerakostin/AdventOfCode-2019/blob/e4d4ab12c00bc947a2e1002b83e348c36b2d93c3/src/main/kotlin/aoc/day01/Day01RocketEquation.kt)|
