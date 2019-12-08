@@ -2,15 +2,11 @@ package aoc.day02
 
 import aoc.utils.Computer
 import aoc.utils.Intcode
-import aoc.utils.Utils
 
 
 
 fun main() {
-    val program = Utils.lineFromResource("InputDay02.txt")
-            .split(",")
-            .map { it.toInt() }
-            .toMutableList()
+    val program= Computer.ProgramReader.readProgram("InputDay02.txt")
 
     val task1 = task1(program)
     val task2 = task2()

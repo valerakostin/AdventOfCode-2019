@@ -1,2 +1,0 @@
-package aoc.day05
-

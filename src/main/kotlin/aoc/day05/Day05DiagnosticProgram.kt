@@ -2,12 +2,12 @@ package aoc.day05
 
 import aoc.utils.Computer
 import aoc.utils.Intcode
-import aoc.utils.Utils
 
 
 fun main() {
-    val task1 = task1(readProgram())
-    val task2 = task2(readProgram())
+
+    val task1 = task1(Computer.ProgramReader.readProgram("InputDay05.txt"))
+    val task2 = task2(Computer.ProgramReader.readProgram("InputDay05.txt"))
 
     println(
             """
@@ -15,13 +15,6 @@ fun main() {
                Task1: $task1
                Task2: $task2
             """.trimIndent())
-}
-
-private fun readProgram(): MutableList<Int> {
-    return Utils.lineFromResource("InputDay05.txt")
-            .split(",")
-            .map { it.toInt() }
-            .toMutableList()
 }
 
 
