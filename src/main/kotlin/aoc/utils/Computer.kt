@@ -3,16 +3,26 @@ package aoc.utils
 
 typealias Intcode = MutableList<Int>
 
-class Computer(private val program: Intcode, private val input: Int = 0, var inputSupplier: ((Int) -> Int)? = null, val resumeOnOutput: Boolean = false) {
-    private var counter = 0
-    private var lastOutput = 0
-    private var inputCounter = 0
-    private var isReady = false
-    private var pause = false
+private data class ComputerState(var counter: Int = 0,
+                                 var lastOutput: Int = 0,
+                                 var inputCounter: Int = 0,
+                                 var isReady: Boolean = false,
+                                 var pause: Boolean = false) {
+    fun increaseCounter(c: Int) {
+        counter += c
+    }
+
+    fun increaseInputCounter() {
+        inputCounter += 1
+    }
+}
+
+class Computer(private val program: Intcode, var inputSupplier: ((Int) -> Int)? = null, val resumeOnOutput: Boolean = false) {
+    private val state = ComputerState()
 
     fun execute() {
-        while (!program[counter].isHaltOpcode() && !pause) {
-            val opcode = program[counter]
+        while (!program[state.counter].isHaltOpcode() && !state.pause) {
+            val opcode = program[state.counter]
             when {
                 opcode.isAddOpCode() -> addCommand(opcode.opCodePositions())
                 opcode.isMulOpCode() -> mulCommand(opcode.opCodePositions())
@@ -25,8 +35,8 @@ class Computer(private val program: Intcode, private val input: Int = 0, var inp
                 else -> throw IllegalArgumentException(opcode.opCodePositions())
             }
         }
-        if (program[counter].isHaltOpcode())
-            isReady = true
+        if (program[state.counter].isHaltOpcode())
+            state.isReady = true
     }
 
     private fun Int.opCodePositions() = this.toString().padStart(5, '0').substring(0, 3).reversed()
@@ -45,24 +55,24 @@ class Computer(private val program: Intcode, private val input: Int = 0, var inp
     private fun mulCommand(mode: String) = mathCommand(mode) { o1, o2 -> o1 * o2 }
 
     private fun outputCommand() {
-        inOutCommand { lastOutput = program[it] }
+        inOutCommand { state.lastOutput = program[it] }
         if (resumeOnOutput)
-            pause = true
+            state.pause = true
     }
 
-    fun isReady() = isReady
+    fun isReady() = state.isReady
 
 
     fun resume() {
-        pause = false
+        state.pause = false
     }
 
 
     private fun inputCommand() {
         if (inputSupplier != null)
-            inOutCommand { program[it] = inputSupplier!!.invoke(inputCounter) }
+            inOutCommand { program[it] = inputSupplier!!.invoke(state.inputCounter) }
         else
-            inOutCommand { program[it] = input }
+            throw IllegalStateException("Supplier is not specified")
     }
 
     private fun isEquals(modes: String) = compareCommand(modes) { x, y -> x == y }
@@ -72,41 +82,41 @@ class Computer(private val program: Intcode, private val input: Int = 0, var inp
     private fun jumpIfTrue(modes: String) = jumpCommand(modes) { it != 0 }
 
     private fun mathCommand(modes: String, op: (Int, Int) -> Int) {
-        val operand1 = getValue(program[counter + 1], modes[0])
-        val operand2 = getValue(program[counter + 2], modes[1])
+        val operand1 = getValue(program[state.counter + 1], modes[0])
+        val operand2 = getValue(program[state.counter + 2], modes[1])
 
         val result = op(operand1, operand2)
-        val i = program[counter + 3]
+        val i = program[state.counter + 3]
         program[i] = result
-        counter += 4
+        state.increaseCounter(4)
     }
 
     private fun inOutCommand(action: (Int) -> Unit) {
-        val operand1Address = program[counter + 1]
+        val operand1Address = program[state.counter + 1]
         action(operand1Address)
-        counter += 2
-        inputCounter += 1
+        state.increaseCounter(2)
+        state.increaseInputCounter()
     }
 
     private fun jumpCommand(modes: String, condition: (Int) -> Boolean) {
-        val operand1 = getValue(program[counter + 1], modes[0])
+        val operand1 = getValue(program[state.counter + 1], modes[0])
         if (condition(operand1)) {
-            counter = getValue(program[counter + 2], modes[1])
+            state.counter = getValue(program[state.counter + 2], modes[1])
         } else
-            counter += 3
+            state.increaseCounter(3)
     }
 
     private fun compareCommand(modes: String, compare: (Int, Int) -> Boolean) {
-        val operand1 = getValue(program[counter + 1], modes[0])
-        val operand2 = getValue(program[counter + 2], modes[1])
-        val operand1Address = program[counter + 3]
+        val operand1 = getValue(program[state.counter + 1], modes[0])
+        val operand2 = getValue(program[state.counter + 2], modes[1])
+        val operand1Address = program[state.counter + 3]
 
         if (compare(operand1, operand2))
             program[operand1Address] = 1
         else
             program[operand1Address] = 0
 
-        counter += 4
+        state.increaseCounter(4)
     }
 
     private fun getValue(address: Int, m: Char): Int {
@@ -116,7 +126,7 @@ class Computer(private val program: Intcode, private val input: Int = 0, var inp
             address
     }
 
-    fun output() = lastOutput
+    fun output() = state.lastOutput
 
     object ProgramReader {
         fun readProgram(resource: String): Intcode {

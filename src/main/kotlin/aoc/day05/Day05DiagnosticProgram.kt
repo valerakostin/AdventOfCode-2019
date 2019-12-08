@@ -19,7 +19,7 @@ fun main() {
 
 
 fun task1(program: Intcode): Int {
-    val c = Computer(program, 1)
+    val c = Computer(program, inputSupplier = { 1 })
     c.execute()
     return c.output()
 }
@@ -27,7 +27,7 @@ fun task1(program: Intcode): Int {
 
 fun task2(program: Intcode): Int {
 
-    val c = Computer(program, 5)
+    val c = Computer(program, inputSupplier = { 5 })
     c.execute()
     return c.output()
 }
