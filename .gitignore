@@ -27,5 +27,7 @@ build
 /.idea/misc.xml
 /.idea/modules.xml
 /.idea/vcs.xml
+/.idea/uiDesigner.xml
+out
 /gradle/wrapper/gradle-wrapper.jar
 /gradle/wrapper/gradle-wrapper.properties
