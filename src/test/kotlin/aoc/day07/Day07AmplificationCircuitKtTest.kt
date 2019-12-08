@@ -50,13 +50,13 @@ internal class Day07AmplificationCircuitKtTest {
 
     @Test
     fun `answer for part 1 is 20413`() {
-        val program = Computer.ProgramReader.readProgram("InputDay09.txt")
+        val program = Computer.ProgramReader.readProgram("InputDay07.txt")
         assertEquals(20413, task1(program)?.first)
     }
 
     @Test
     fun `answer for part 2 is 3321777`() {
-        val program = Computer.ProgramReader.readProgram("InputDay09.txt")
+        val program = Computer.ProgramReader.readProgram("InputDay07.txt")
         assertEquals(3321777, task2(program)?.first)
     }
 }
