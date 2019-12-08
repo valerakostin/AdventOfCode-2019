@@ -9,7 +9,6 @@ fun main() {
     val program = Computer.ProgramReader.readProgram("InputDay07.txt")
 
     val task1 = task1(program)
-    println(task1)
     val task2 = task2(program)
 
     println(
