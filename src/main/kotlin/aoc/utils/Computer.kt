@@ -4,8 +4,8 @@ package aoc.utils
 typealias Intcode = MutableList<Int>
 
 private data class ComputerState(var counter: Int = 0,
-                                 var lastOutput: Int = 0,
                                  var inputCounter: Int = 0,
+                                 var relativeAddressBase: Int = 0,
                                  var isReady: Boolean = false,
                                  var pause: Boolean = false) {
     fun increaseCounter(c: Int) {
@@ -14,6 +14,14 @@ private data class ComputerState(var counter: Int = 0,
 
     fun increaseInputCounter() {
         inputCounter += 1
+    }
+
+    fun adjustRelativeAddress(offset: Int) {
+        relativeAddressBase += offset
+    }
+
+    fun addOutput(i: Int) {
+        outputs.add(i)
     }
 }
 
@@ -32,11 +40,18 @@ class Computer(private val program: Intcode, var inputSupplier: ((Int) -> Int)? 
                 opcode.isJumpIfFalseOpCode() -> jumpIfFalse(opcode.opCodePositions())
                 opcode.isLessThanOpCode() -> isLessThan(opcode.opCodePositions())
                 opcode.isEqualsOpCode() -> isEquals(opcode.opCodePositions())
+                opcode.isAdjustRelativeAddress() -> adjustRelativeAddress(opcode.opCodePositions())
                 else -> throw IllegalArgumentException(opcode.opCodePositions())
             }
         }
         if (program[state.counter].isHaltOpcode())
             state.isReady = true
+    }
+
+    private fun adjustRelativeAddress(modes: String) {
+        val operand1 = getValue(program[state.counter + 1], modes[0])
+        state.adjustRelativeAddress(operand1)
+        state.increaseCounter(2)
     }
 
     private fun Int.opCodePositions() = this.toString().padStart(5, '0').substring(0, 3).reversed()
@@ -50,6 +65,7 @@ class Computer(private val program: Intcode, var inputSupplier: ((Int) -> Int)? 
     private fun Int.isJumpIfFalseOpCode() = this.toString().endsWith("6")
     private fun Int.isLessThanOpCode() = this.toString().endsWith("7")
     private fun Int.isEqualsOpCode() = this.toString().endsWith("8")
+    private fun Int.isAdjustRelativeAddress() = this.toString().endsWith("9")
 
     private fun addCommand(mode: String) = mathCommand(mode) { o1, o2 -> o1 + o2 }
     private fun mulCommand(mode: String) = mathCommand(mode) { o1, o2 -> o1 * o2 }
@@ -120,10 +136,11 @@ class Computer(private val program: Intcode, var inputSupplier: ((Int) -> Int)? 
     }
 
     private fun getValue(address: Int, m: Char): Int {
-        return if (m == '0') {
-            program[address]
-        } else
-            address
+        return when (m) {
+            '0' -> program[address]
+            '1' -> address
+            else -> state.relativeAddressBase + program[address]
+        }
     }
 
     fun output() = state.lastOutput
