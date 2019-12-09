@@ -27,12 +27,46 @@ private data class ComputerState(var counter: Int = 0,
     }
 }
 
+private class Memory(val program: Intcode) {
+    val memory = mutableListOf<Int>()
+
+
+    fun read(address: Int): Int {
+        if (address >= 0 && address < program.size)
+            return program[address]
+
+        val diff = address - program.size
+        if (memory.size <= diff)
+            repeat(diff + 1)
+            {
+                memory.add(0)
+            }
+        return memory[address - program.size]
+    }
+
+    fun write(address: Int, value: Int) {
+        if (address >= 0 && address < program.size)
+            program[address] = value
+        else {
+            val diff = address - program.size
+            if (memory.size <= diff)
+                repeat(diff + 1)
+                {
+                    memory.add(0)
+                }
+            memory[address - program.size] = value
+        }
+    }
+}
+
 class Computer(private val program: Intcode, var inputSupplier: ((Int) -> Int)? = null, val resumeOnOutput: Boolean = false) {
     private val state = ComputerState()
+    private val memory = Memory(program)
+
 
     fun execute() {
-        while (!program[state.counter].isHaltOpcode() && !state.pause) {
-            val opcode = program[state.counter]
+        while (!memory.read(state.counter).isHaltOpcode() && !state.pause) {
+            val opcode = memory.read(state.counter)
             when {
                 opcode.isAddOpCode() -> addCommand(opcode.opCodePositions())
                 opcode.isMulOpCode() -> mulCommand(opcode.opCodePositions())
@@ -46,12 +80,12 @@ class Computer(private val program: Intcode, var inputSupplier: ((Int) -> Int)? 
                 else -> throw IllegalArgumentException(opcode.opCodePositions())
             }
         }
-        if (program[state.counter].isHaltOpcode())
+        if (memory.read(state.counter).isHaltOpcode())
             state.isReady = true
     }
 
     private fun adjustRelativeAddress(modes: String) {
-        val operand1 = getValue(program[state.counter + 1], modes[0])
+        val operand1 = getValue(memory.read(state.counter + 1), modes[0])
         state.adjustRelativeAddress(operand1)
         state.increaseCounter(2)
     }
@@ -74,7 +108,7 @@ class Computer(private val program: Intcode, var inputSupplier: ((Int) -> Int)? 
 
     private fun outputCommand(modes: String) {
 
-        inOutCommand(modes) { state.addOutput(program[it]) }
+        inOutCommand(modes) { state.addOutput(memory.read(it)) }
         if (resumeOnOutput)
             state.pause = true
     }
@@ -89,7 +123,7 @@ class Computer(private val program: Intcode, var inputSupplier: ((Int) -> Int)? 
 
     private fun inputCommand(mode: String) {
         if (inputSupplier != null)
-            inOutCommand(mode) { program[it] = inputSupplier!!.invoke(state.inputCounter) }
+            inOutCommand(mode) { memory.write(it, inputSupplier!!.invoke(state.inputCounter)) }
         else
             throw IllegalStateException("Supplier is not specified")
     }
@@ -101,12 +135,12 @@ class Computer(private val program: Intcode, var inputSupplier: ((Int) -> Int)? 
     private fun jumpIfTrue(modes: String) = jumpCommand(modes) { it != 0 }
 
     private fun mathCommand(modes: String, op: (Int, Int) -> Int) {
-        val operand1 = getValue(program[state.counter + 1], modes[0])
-        val operand2 = getValue(program[state.counter + 2], modes[1])
+        val operand1 = getValue(memory.read(state.counter + 1), modes[0])
+        val operand2 = getValue(memory.read(state.counter + 2), modes[1])
 
         val result = op(operand1, operand2)
-        val i = program[state.counter + 3]
-        program[i] = result
+        val i = memory.read(state.counter + 3)
+        memory.write(i, result)
         state.increaseCounter(4)
     }
 
@@ -118,31 +152,31 @@ class Computer(private val program: Intcode, var inputSupplier: ((Int) -> Int)? 
     }
 
     private fun jumpCommand(modes: String, condition: (Int) -> Boolean) {
-        val operand1 = getValue(program[state.counter + 1], modes[0])
+        val operand1 = getValue(memory.read(state.counter + 1), modes[0])
         if (condition(operand1)) {
-            state.counter = getValue(program[state.counter + 2], modes[1])
+            state.counter = getValue(memory.read(state.counter + 2), modes[1])
         } else
             state.increaseCounter(3)
     }
 
     private fun compareCommand(modes: String, compare: (Int, Int) -> Boolean) {
-        val operand1 = getValue(program[state.counter + 1], modes[0])
-        val operand2 = getValue(program[state.counter + 2], modes[1])
-        val operand1Address = program[state.counter + 3]
+        val operand1 = getValue(memory.read(state.counter + 1), modes[0])
+        val operand2 = getValue(memory.read(state.counter + 2), modes[1])
+        val operand1Address = memory.read(state.counter + 3)
 
         if (compare(operand1, operand2))
-            program[operand1Address] = 1
+            memory.write(operand1Address, 1)
         else
-            program[operand1Address] = 0
+            memory.write(operand1Address, 0)
 
         state.increaseCounter(4)
     }
 
     private fun getValue(address: Int, m: Char): Int {
         return when (m) {
-            '0' -> program[address]
+            '0' -> memory.read(address)
             '1' -> address
-            else -> state.relativeAddressBase + program[address]
+            else -> state.relativeAddressBase + memory.read(address)
         }
     }
 
