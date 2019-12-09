@@ -7,7 +7,9 @@ private data class ComputerState(var counter: Int = 0,
                                  var inputCounter: Int = 0,
                                  var relativeAddressBase: Int = 0,
                                  var isReady: Boolean = false,
-                                 var pause: Boolean = false) {
+                                 var outputs: MutableList<Int> = mutableListOf(),
+                                 var pause: Boolean = false
+) {
     fun increaseCounter(c: Int) {
         counter += c
     }
@@ -144,7 +146,9 @@ class Computer(private val program: Intcode, var inputSupplier: ((Int) -> Int)? 
         }
     }
 
-    fun output() = state.lastOutput
+    fun output() = state.outputs.last()
+
+    fun outputs() = state.outputs
 
     object ProgramReader {
         fun readProgram(resource: String): Intcode {
