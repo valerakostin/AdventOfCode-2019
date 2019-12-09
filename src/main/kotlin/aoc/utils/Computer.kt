@@ -34,8 +34,8 @@ class Computer(private val program: Intcode, var inputSupplier: ((Int) -> Int)? 
             when {
                 opcode.isAddOpCode() -> addCommand(opcode.opCodePositions())
                 opcode.isMulOpCode() -> mulCommand(opcode.opCodePositions())
-                opcode.isInputOpCode() -> inputCommand()
-                opcode.isOutputOpCode() -> outputCommand()
+                opcode.isInputOpCode() -> inputCommand(opcode.opCodePositions())
+                opcode.isOutputOpCode() -> outputCommand(opcode.opCodePositions())
                 opcode.isJumpIfTrueOpCode() -> jumpIfTrue(opcode.opCodePositions())
                 opcode.isJumpIfFalseOpCode() -> jumpIfFalse(opcode.opCodePositions())
                 opcode.isLessThanOpCode() -> isLessThan(opcode.opCodePositions())
@@ -70,8 +70,9 @@ class Computer(private val program: Intcode, var inputSupplier: ((Int) -> Int)? 
     private fun addCommand(mode: String) = mathCommand(mode) { o1, o2 -> o1 + o2 }
     private fun mulCommand(mode: String) = mathCommand(mode) { o1, o2 -> o1 * o2 }
 
-    private fun outputCommand() {
-        inOutCommand { state.lastOutput = program[it] }
+    private fun outputCommand(modes: String) {
+
+        inOutCommand(modes) { state.addOutput(program[it]) }
         if (resumeOnOutput)
             state.pause = true
     }
@@ -84,9 +85,9 @@ class Computer(private val program: Intcode, var inputSupplier: ((Int) -> Int)? 
     }
 
 
-    private fun inputCommand() {
+    private fun inputCommand(mode: String) {
         if (inputSupplier != null)
-            inOutCommand { program[it] = inputSupplier!!.invoke(state.inputCounter) }
+            inOutCommand(mode) { program[it] = inputSupplier!!.invoke(state.inputCounter) }
         else
             throw IllegalStateException("Supplier is not specified")
     }
@@ -107,8 +108,8 @@ class Computer(private val program: Intcode, var inputSupplier: ((Int) -> Int)? 
         state.increaseCounter(4)
     }
 
-    private fun inOutCommand(action: (Int) -> Unit) {
-        val operand1Address = program[state.counter + 1]
+    private fun inOutCommand(mode: String, action: (Int) -> Unit) {
+        val operand1Address = getValue(state.counter + 1, mode[0])
         action(operand1Address)
         state.increaseCounter(2)
         state.increaseInputCounter()
