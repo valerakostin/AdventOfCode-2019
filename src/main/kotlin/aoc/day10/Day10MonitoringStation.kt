@@ -2,16 +2,18 @@ package aoc.day10
 
 import aoc.utils.Utils
 import kotlin.math.abs
+import kotlin.math.atan2
 
-//data class Vector(private val start: Point, val end: Point) {
-//    private val x = end.x - start.x
-//    private val y = end.y - start.y
+data class Vector(private val start: Point, val end: Point) {
+    private val x = end.x - start.x
+    private val y = end.y - start.y
 
-
-//    fun angle(v: Vector): Double {
-//        return ((this.x * v.x + this.y * v.y).toDouble()) / (sqrt((this.x * this.x + this.y * this.y).toDouble()) * sqrt((v.x * v.x + v.y * v.y).toDouble()))
-//    }
-//}
+    fun angle(v: Vector): Double {
+        val dot = this.x * v.x + this.y * v.y
+        val det = this.x * v.y - this.y * v.x
+        return atan2(det.toDouble(), dot.toDouble())
+    }
+}
 
 data class Point(val x: Int, val y: Int) {
 
@@ -41,7 +43,7 @@ data class Point(val x: Int, val y: Int) {
                 for (j in linesFromResource[i].indices) {
                     val c = linesFromResource[i][j]
                     if (c == '#')
-                        points.add(Point(i, j))
+                        points.add(Point(j, i))
                 }
             }
             return points
@@ -52,20 +54,10 @@ data class Point(val x: Int, val y: Int) {
 
 fun main() {
 
-    val points =
-            Point.PointParser.readPoints(Utils.linesFromResource("InputDay10.txt"))
-    val connections = getConnections(points)
-    val entry = connections.maxBy { it.value.count() }
-    val task1 = entry?.value?.size
+    val pair = task1()
+    val task1 = pair.second.size
 
-    // entry?.let {
-    //     val start = it.key
-    //     val base = Vector(start, Point(start.x, start.y - 1))
-
-    //       val angles = it.value.map { p -> Pair(p, Vector(start, p).angle(base)) }.sortedBy { pair -> pair.second }
-//}
-
-    val task2 = task2()
+    val task2 = task2(199, pair)
 
     println(
             """
@@ -73,6 +65,31 @@ fun main() {
                Task1: $task1
                Task2: $task2
             """.trimIndent())
+}
+
+internal fun task1(): Pair<Point, List<Point>> {
+    val points =
+            Point.PointParser.readPoints(Utils.linesFromResource("InputDay10.txt"))
+    val connections = getConnections(points)
+    return connections.maxBy { it.value.count() }!!.toPair()
+}
+
+fun task2(i: Int, input: Pair<Point, List<Point>>): Int {
+    val asteroidPos = getAsteroidAt(input, i)
+    return asteroidPos.x * 100 + asteroidPos.y
+}
+
+internal fun getAsteroidAt(input: Pair<Point, List<Point>>, i: Int): Point {
+    val angles = getSortedAngles(input)
+    return angles[i].first
+}
+
+internal fun getSortedAngles(input: Pair<Point, List<Point>>): List<Pair<Point, Double>> {
+    val start = input.first
+    val base = Vector(start, Point(start.x, start.y - 1))
+    return input.second
+            .map { p -> Pair(p, Math.toDegrees(Vector(p, start).angle(base))) }
+            .sortedBy { pair -> pair.second }.reversed()
 }
 
 internal fun getConnections(points: List<Point>): Map<Point, List<Point>> {
@@ -89,5 +106,3 @@ internal fun getConnections(points: List<Point>): Map<Point, List<Point>> {
     return map
 }
 
-
-fun task2() {}
