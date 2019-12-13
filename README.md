@@ -18,3 +18,4 @@ and not idiomatic, but they still return correct answers.
 |7  |[Amplification Circuit](https://adventofcode.com/2019/day/7)|[Code](https://github.com/valerakostin/AdventOfCode-2019/blob/15a7a54bf76b2f79998dbef10357a6479d55928a/src/main/kotlin/aoc/day07/Day07AmplificationCircuit.kt)|
 |8  |[Space Image Format](https://adventofcode.com/2019/day/8)|[Code](https://github.com/valerakostin/AdventOfCode-2019/blob/61d6e6888ea2eee0139c1c24b280effde879b2f6/src/main/kotlin/aoc/day08/Day08SpaceImageFormat.kt)|
 |10  |[Monitoring Station](https://adventofcode.com/2019/day/10)|[Code](https://github.com/valerakostin/AdventOfCode-2019/blob/cb76f3e274fa7f1781ea5c87ec44f7f0f367d04f/src/main/kotlin/aoc/day10/Day10MonitoringStation.kt)|
+|12  |[The N-Body Problem](https://adventofcode.com/2019/day/12)|[Code](https://github.com/valerakostin/AdventOfCode-2019/blob/master/src/main/kotlin/aoc/day12/Day12N-Body%20Problem.kt)|
