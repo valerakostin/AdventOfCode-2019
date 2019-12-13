@@ -70,24 +70,18 @@ data class State(val items: List<Item>) {
     }
 }
 
-
 fun main() {
 
-    val state = State(
-            listOf(
-                    Item(Pos(1, 2, -9), Vel(0, 0, 0)),
-                    Item(Pos(-1, -9, -4), Vel(0, 0, 0)),
-                    Item(Pos(17, 6, 8), Vel(0, 0, 0)),
-                    Item(Pos(12, 4, 2), Vel(0, 0, 0))))
+    val state = createInitialState()
 
-    var nextStep = state
-    nextStep.print()
+    var nextStep = state.copy()
     repeat(1000) {
         nextStep = nextStep.nextStep()
     }
 
     val task1 = nextStep.energy()
-    val task2 = task2()
+
+    val task2 = task2(::createInitialState)
 
     println(
             """
@@ -97,4 +91,65 @@ fun main() {
             """.trimIndent())
 }
 
-fun task2() {}
+internal fun task2(state: () -> State): Long {
+    fun gcd(a: Long, b: Long): Long = if (b == 0L) a else gcd(b, a % b)
+
+    fun lcm(a: Long, b: Long): Long = a / gcd(a, b) * b
+
+    val state1 = state.invoke()
+    var nextStep1 = state1
+
+    var xSteps: Long = 0
+    while (true) {
+        nextStep1 = nextStep1.nextStep()
+
+        xSteps += 1
+        if (nextStep1.items[0].vel.x == 0 &&
+                nextStep1.items[1].vel.x == 0 &&
+                nextStep1.items[2].vel.x == 0 &&
+                nextStep1.items[3].vel.x == 0) {
+            break
+        }
+    }
+    val state2 = state.invoke()
+    nextStep1 = state2
+    var ySteps: Long = 0
+    while (true) {
+        nextStep1 = nextStep1.nextStep()
+
+        ySteps += 1
+        if (nextStep1.items[0].vel.y == 0 &&
+                nextStep1.items[1].vel.y == 0 &&
+                nextStep1.items[2].vel.y == 0 &&
+                nextStep1.items[3].vel.y == 0) {
+            break
+        }
+    }
+
+
+    var zSteps:Long = 0
+    val state3 = state.invoke()
+    nextStep1 = state3
+    while (true) {
+        nextStep1 = nextStep1.nextStep()
+
+        zSteps += 1
+        if (nextStep1.items[0].vel.z == 0 &&
+                nextStep1.items[1].vel.z == 0 &&
+                nextStep1.items[2].vel.z == 0 &&
+                nextStep1.items[3].vel.z == 0) {
+            break
+        }
+    }
+
+    return lcm(lcm(xSteps, ySteps), zSteps) * 2
+}
+
+private fun createInitialState(): State {
+    return State(
+            listOf(
+                    Item(Pos(1, 2, -9), Vel(0, 0, 0)),
+                    Item(Pos(-1, -9, -4), Vel(0, 0, 0)),
+                    Item(Pos(17, 6, 8), Vel(0, 0, 0)),
+                    Item(Pos(12, 4, 2), Vel(0, 0, 0))))
+}
