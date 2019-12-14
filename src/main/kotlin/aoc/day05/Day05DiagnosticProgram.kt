@@ -18,14 +18,14 @@ fun main() {
 }
 
 
-fun task1(program: Intcode): Int {
+fun task1(program: Intcode): Long {
     val c = Computer(program, inputSupplier = { 1 })
     c.execute()
     return c.output()
 }
 
 
-fun task2(program: Intcode): Int {
+fun task2(program: Intcode): Long {
 
     val c = Computer(program, inputSupplier = { 5 })
     c.execute()

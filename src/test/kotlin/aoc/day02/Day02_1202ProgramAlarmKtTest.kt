@@ -1,7 +1,6 @@
 package aoc.day02
 
 import aoc.utils.Computer
-import aoc.utils.Utils
 import org.junit.Test
 import kotlin.test.assertEquals
 
@@ -26,10 +25,7 @@ internal class Day02_1202ProgramAlarmKtTest {
         assertEquals(7912, task2())
     }
 
-    private fun getProgram(): MutableList<Int> {
-        return Utils.lineFromResource("InputDay02.txt")
-                .split(",")
-                .map { it.toInt() }
-                .toMutableList()
+    private fun getProgram(): MutableMap<Int, Long> {
+        return Computer.ProgramReader.readProgram("InputDay02.txt")
     }
 }

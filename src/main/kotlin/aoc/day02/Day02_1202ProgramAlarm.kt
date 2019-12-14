@@ -2,11 +2,11 @@ package aoc.day02
 
 import aoc.utils.Computer
 import aoc.utils.Intcode
-
+import aoc.utils.read
 
 
 fun main() {
-    val program= Computer.ProgramReader.readProgram("InputDay02.txt")
+    val program = Computer.ProgramReader.readProgram("InputDay02.txt")
 
     val task1 = task1(program)
     val task2 = task2()
@@ -21,11 +21,17 @@ fun main() {
 
 
 fun task1(program: Intcode): Int {
-    program[1] = 12
-    program[2] = 2
+      program[1] = 12
+      program[2] = 2
     val computer = Computer(program)
     computer.execute()
-    return program[0]
+    return program.read(0).toInt()
+}
+
+private fun inputs(index: Int): Long {
+    if (index == 0)
+        return 12L
+    return 2L
 }
 
 /**
