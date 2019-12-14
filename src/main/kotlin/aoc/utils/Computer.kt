@@ -1,13 +1,13 @@
 package aoc.utils
 
 
-typealias Intcode = MutableList<Int>
+typealias Intcode = MutableMap<Int, Long>
 
 private data class ComputerState(var counter: Int = 0,
                                  var inputCounter: Int = 0,
                                  var relativeAddressBase: Int = 0,
                                  var isReady: Boolean = false,
-                                 var outputs: MutableList<Int> = mutableListOf(),
+                                 var outputs: MutableList<Long> = mutableListOf(),
                                  var pause: Boolean = false
 ) {
     fun increaseCounter(c: Int) {
@@ -22,56 +22,37 @@ private data class ComputerState(var counter: Int = 0,
         relativeAddressBase += offset
     }
 
-    fun addOutput(i: Int) {
-        outputs.add(i)
+    fun addOutput(value: Long) {
+        outputs.add(value)
     }
 }
 
-private class Memory(val program: Intcode) {
-    val memory = mutableListOf<Int>()
-
-
-    fun read(address: Int): Int {
-        if (address >= 0 && address < program.size)
-            return program[address]
-
-        val diff = address - program.size
-        if (memory.size <= diff)
-            repeat(diff + 1)
-            {
-                memory.add(0)
-            }
-        return memory[address - program.size]
-    }
-
-    fun write(address: Int, value: Int) {
-        if (address >= 0 && address < program.size)
-            program[address] = value
-        else {
-            val diff = address - program.size
-            if (memory.size <= diff)
-                repeat(diff + 1)
-                {
-                    memory.add(0)
-                }
-            memory[address - program.size] = value
-        }
-    }
+fun Intcode.read(pointer: Long) = read(pointer.toInt())
+fun Intcode.read(pointer: Int): Long {
+    if (pointer < 0)
+        throw IllegalArgumentException("Pointer can not be negative $pointer")
+    return this.getOrDefault(pointer, 0L)
 }
 
-class Computer(private val program: Intcode, var inputSupplier: ((Int) -> Int)? = null, val resumeOnOutput: Boolean = false) {
+fun Intcode.write(pointer: Long, value: Long) = write(pointer.toInt(), value)
+fun Intcode.write(pointer: Int, value: Long) {
+    if (pointer < 0)
+        throw IllegalArgumentException("Pointer can not be negative $pointer")
+    this[pointer] = value
+}
+
+class Computer(private val program: Intcode, var inputSupplier: ((Int) -> Long)? = null, val resumeOnOutput: Boolean = false) {
     private val state = ComputerState()
-    private val memory = Memory(program)
 
 
     fun execute() {
-        while (!memory.read(state.counter).isHaltOpcode() && !state.pause) {
-            val opcode = memory.read(state.counter)
+        while (!program.read(state.counter).isHaltOpcode() && !state.pause) {
+            val opcode = program.read(state.counter)
             when {
                 opcode.isAddOpCode() -> addCommand(opcode.opCodePositions())
                 opcode.isMulOpCode() -> mulCommand(opcode.opCodePositions())
-                opcode.isInputOpCode() -> inputCommand(opcode.opCodePositions())
-                opcode.isOutputOpCode() -> outputCommand(opcode.opCodePositions())
+                opcode.isInputOpCode() -> inputCommand(opcode.opCodePositions()[0])
+                opcode.isOutputOpCode() -> outputCommand(opcode.opCodePositions()[0])
                 opcode.isJumpIfTrueOpCode() -> jumpIfTrue(opcode.opCodePositions())
                 opcode.isJumpIfFalseOpCode() -> jumpIfFalse(opcode.opCodePositions())
                 opcode.isLessThanOpCode() -> isLessThan(opcode.opCodePositions())
@@ -80,37 +61,124 @@ class Computer(private val program: Intcode, var inputSupplier: ((Int) -> Int)? 
                 else -> throw IllegalArgumentException(opcode.opCodePositions())
             }
         }
-        if (memory.read(state.counter).isHaltOpcode())
+        if (program.read(state.counter).isHaltOpcode())
             state.isReady = true
     }
 
-    private fun adjustRelativeAddress(modes: String) {
-        val operand1 = getValue(memory.read(state.counter + 1), modes[0])
-        state.adjustRelativeAddress(operand1)
-        state.increaseCounter(2)
-    }
 
-    private fun Int.opCodePositions() = this.toString().padStart(5, '0').substring(0, 3).reversed()
+    private fun Long.opCodePositions() = this.toString().padStart(5, '0').substring(0, 3).reversed()
 
-    private fun Int.isHaltOpcode() = this == 99
-    private fun Int.isAddOpCode() = this.toString().endsWith("1")
-    private fun Int.isMulOpCode() = this.toString().endsWith("2")
-    private fun Int.isInputOpCode() = this == 3
-    private fun Int.isOutputOpCode() = this.toString().endsWith("4")
-    private fun Int.isJumpIfTrueOpCode() = this.toString().endsWith("5")
-    private fun Int.isJumpIfFalseOpCode() = this.toString().endsWith("6")
-    private fun Int.isLessThanOpCode() = this.toString().endsWith("7")
-    private fun Int.isEqualsOpCode() = this.toString().endsWith("8")
-    private fun Int.isAdjustRelativeAddress() = this.toString().endsWith("9")
+    private fun Long.isHaltOpcode() = this == 99L
+    private fun Long.isAddOpCode() = this.toString().endsWith("1")
+    private fun Long.isMulOpCode() = this.toString().endsWith("2")
+    private fun Long.isInputOpCode() = this.toString().endsWith("3")
+    private fun Long.isOutputOpCode() = this.toString().endsWith("4")
+    private fun Long.isJumpIfTrueOpCode() = this.toString().endsWith("5")
+    private fun Long.isJumpIfFalseOpCode() = this.toString().endsWith("6")
+    private fun Long.isLessThanOpCode() = this.toString().endsWith("7")
+    private fun Long.isEqualsOpCode() = this.toString().endsWith("8")
+    private fun Long.isAdjustRelativeAddress() = this.toString().endsWith("9")
 
     private fun addCommand(mode: String) = mathCommand(mode) { o1, o2 -> o1 + o2 }
     private fun mulCommand(mode: String) = mathCommand(mode) { o1, o2 -> o1 * o2 }
 
-    private fun outputCommand(modes: String) {
+//    private fun outputCommand(mode: Char) {
+//
+//        inOutCommand(mode) { state.addOutput(program.read(it)) }
+//        if (resumeOnOutput)
+//            state.pause = true
+//    }
 
-        inOutCommand(modes) { state.addOutput(memory.read(it)) }
+    private fun outputCommand(mode: Char) {
+        val operand1Address = readValue(state.counter + 1, mode)
+
+        state.addOutput(operand1Address)
+        state.increaseCounter(2)
+        state.increaseInputCounter()
+
         if (resumeOnOutput)
             state.pause = true
+    }
+
+
+    private fun inputCommand(mode: Char) {
+        if (inputSupplier != null) {
+            writeValue(state.counter + 1, inputSupplier!!.invoke(state.inputCounter), mode)
+            state.increaseCounter(2)
+            state.increaseInputCounter()
+        } else
+            throw IllegalStateException("Supplier is not specified")
+    }
+
+
+    private fun isEquals(modes: String) = compareCommand(modes) { x, y -> x == y }
+    private fun isLessThan(modes: String) = compareCommand(modes) { x, y -> x < y }
+
+    private fun jumpIfFalse(modes: String) = jumpCommand(modes) { it == 0L }
+    private fun jumpIfTrue(modes: String) = jumpCommand(modes) { it != 0L }
+
+    private fun mathCommand(modes: String, op: (Long, Long) -> Long) {
+        val operand1 = readValue(state.counter + 1, modes[0])
+        val operand2 = readValue(state.counter + 2, modes[1])
+
+        val result = op(operand1, operand2)
+        writeValue(state.counter + 3, result, modes[2])
+        state.increaseCounter(4)
+    }
+
+    private fun readValue(pointer: Int, mode: Char): Long {
+        val value = program.read(pointer)
+        return when (mode) {
+            '0' -> program.read(value.toInt())
+            '1' -> value
+            '2' -> program.read(state.relativeAddressBase + value)
+            else -> throw IllegalArgumentException("unsupported mode $mode")
+        }
+    }
+
+    private fun writeValue(pointer: Int, writeValue: Long, mode: Char) {
+        val addressValue = program.read(pointer)
+        val address = when (mode) {
+            '0' -> addressValue
+            '2' -> addressValue + state.relativeAddressBase
+            else -> throw IllegalArgumentException("unsupported mode $mode")
+        }
+        program.write(address.toInt(), writeValue)
+    }
+
+//    private fun inOutCommand(mode: Char, action: (Long) -> Unit) {
+//        val operand1Address = program.read(state.counter + 1)
+//        action(operand1Address)
+//        state.increaseCounter(2)
+//        state.increaseInputCounter()
+//    }
+
+    private fun jumpCommand(modes: String, condition: (Long) -> Boolean) {
+        val operand1 = readValue(state.counter + 1, modes[0])
+        if (condition(operand1)) {
+            state.counter = readValue(state.counter + 2, modes[1]).toInt()
+        } else
+            state.increaseCounter(3)
+    }
+
+    private fun adjustRelativeAddress(modes: String) {
+        val operand1 = readValue(state.counter + 1, modes[0])
+
+        state.adjustRelativeAddress(operand1.toInt())
+        state.increaseCounter(2)
+
+    }
+
+    private fun compareCommand(modes: String, compare: (Long, Long) -> Boolean) {
+        val operand1 = readValue(state.counter + 1, modes[0])
+        val operand2 = readValue(state.counter + 2, modes[1])
+
+        if (compare(operand1, operand2))
+            writeValue(state.counter + 3, 1, modes[2])
+        else
+            writeValue(state.counter + 3, 0, modes[2])
+
+        state.increaseCounter(4)
     }
 
     fun isReady() = state.isReady
@@ -118,66 +186,6 @@ class Computer(private val program: Intcode, var inputSupplier: ((Int) -> Int)? 
 
     fun resume() {
         state.pause = false
-    }
-
-
-    private fun inputCommand(mode: String) {
-        if (inputSupplier != null)
-            inOutCommand(mode) { memory.write(it, inputSupplier!!.invoke(state.inputCounter)) }
-        else
-            throw IllegalStateException("Supplier is not specified")
-    }
-
-    private fun isEquals(modes: String) = compareCommand(modes) { x, y -> x == y }
-    private fun isLessThan(modes: String) = compareCommand(modes) { x, y -> x < y }
-
-    private fun jumpIfFalse(modes: String) = jumpCommand(modes) { it == 0 }
-    private fun jumpIfTrue(modes: String) = jumpCommand(modes) { it != 0 }
-
-    private fun mathCommand(modes: String, op: (Int, Int) -> Int) {
-        val operand1 = getValue(memory.read(state.counter + 1), modes[0])
-        val operand2 = getValue(memory.read(state.counter + 2), modes[1])
-
-        val result = op(operand1, operand2)
-        val i = memory.read(state.counter + 3)
-        memory.write(i, result)
-        state.increaseCounter(4)
-    }
-
-    private fun inOutCommand(mode: String, action: (Int) -> Unit) {
-        val operand1Address = getValue(state.counter + 1, mode[0])
-        action(operand1Address)
-        state.increaseCounter(2)
-        state.increaseInputCounter()
-    }
-
-    private fun jumpCommand(modes: String, condition: (Int) -> Boolean) {
-        val operand1 = getValue(memory.read(state.counter + 1), modes[0])
-        if (condition(operand1)) {
-            state.counter = getValue(memory.read(state.counter + 2), modes[1])
-        } else
-            state.increaseCounter(3)
-    }
-
-    private fun compareCommand(modes: String, compare: (Int, Int) -> Boolean) {
-        val operand1 = getValue(memory.read(state.counter + 1), modes[0])
-        val operand2 = getValue(memory.read(state.counter + 2), modes[1])
-        val operand1Address = memory.read(state.counter + 3)
-
-        if (compare(operand1, operand2))
-            memory.write(operand1Address, 1)
-        else
-            memory.write(operand1Address, 0)
-
-        state.increaseCounter(4)
-    }
-
-    private fun getValue(address: Int, m: Char): Int {
-        return when (m) {
-            '0' -> memory.read(address)
-            '1' -> address
-            else -> state.relativeAddressBase + memory.read(address)
-        }
     }
 
     fun output() = state.outputs.last()
@@ -188,8 +196,16 @@ class Computer(private val program: Intcode, var inputSupplier: ((Int) -> Int)? 
         fun readProgram(resource: String): Intcode {
             return Utils.lineFromResource(resource)
                     .split(",")
-                    .map { it.toInt() }
-                    .toMutableList()
+                    .withIndex().associateTo(mutableMapOf())
+                    {
+                        it.index to it.value.toLong()
+                    }
         }
+    }
+}
+
+fun List<Int>.toIntCode(): Intcode {
+    return this.withIndex().associateTo(mutableMapOf()) {
+        it.index to it.value.toLong()
     }
 }

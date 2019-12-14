@@ -1,8 +1,6 @@
 package aoc.utils
-
 import org.junit.Test
 import kotlin.test.assertEquals
-
 internal class ComputerTest {
     @Test
     fun `1,0,0,0,99 becomes 2,0,0,0,99 (1 + 1 = 2)`() {
@@ -30,9 +28,12 @@ internal class ComputerTest {
     }
 
     private fun testProgram(input: MutableList<Int>, output: List<Int>) {
-        val computer = Computer(input)
+        val program = input.withIndex().associateTo(mutableMapOf()) {
+            it.index to it.value.toLong()
+        }
+        val computer = Computer(program)
         computer.execute()
         for ((index, value) in output.withIndex())
-            assertEquals(value, input[index])
+            assertEquals(value.toLong(), program[index])
     }
 }
