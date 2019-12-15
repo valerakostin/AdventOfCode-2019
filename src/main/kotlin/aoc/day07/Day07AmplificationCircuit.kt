@@ -43,7 +43,7 @@ internal fun processSequenceWithFeedback(program: MutableMap<Int, Long>, sequenc
     }
 
     while (!amps.all { it.isReady() }) {
-        amps.filter { !it.isReady() }.map { it.resume(); it.execute() }
+        amps.filter { !it.isReady() }.map { it.resume() }
     }
     return amps.last().output()
 }
