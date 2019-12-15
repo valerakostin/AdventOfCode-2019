@@ -3,6 +3,8 @@ package aoc.day11
 import aoc.utils.Computer
 import aoc.utils.Intcode
 
+private fun Int?.isWhite() = this == 1
+
 typealias PanelColor = Int
 
 enum class Direction {
@@ -50,9 +52,9 @@ class Robot(val program: Intcode) {
     private var current = Position(Loc(0, 0), Direction.UP)
 
 
-    private val computer = Computer(program, inputSupplier = { visitedPanels.getOrDefault(current.loc, 0).toLong() }, resumeOnOutput = true)
-
-    fun move() {
+    fun move(initialColor: Int = 0) {
+        visitedPanels[Loc(0, 0)] = initialColor
+        val computer = Computer(program, inputSupplier = { visitedPanels.getOrDefault(current.loc, 0).toLong() }, resumeOnOutput = true)
         computer.execute()
         while (!computer.isReady()) {
             val color = computer.output()
@@ -67,20 +69,39 @@ class Robot(val program: Intcode) {
     fun visited(): Int {
         return visitedPanels.keys.size
     }
+
+
+    fun draw() {
+        val minX = visitedPanels.keys.map { it.x }.min()!!
+        val maxX = visitedPanels.keys.map { it.x }.max()!!
+
+        val minY = visitedPanels.keys.map { it.y }.min()!!
+        val maxY = visitedPanels.keys.map { it.y }.max()!!
+
+        for (j in minY..maxY) {
+            for (i in minX..maxX) {
+                val loc = Loc(i, j)
+                val color = visitedPanels[loc]
+
+                if (color.isWhite())
+                    print("\uD83D\uDD35")
+                else
+                    print("➖")
+            }
+            println()
+        }
+    }
 }
 
 fun main() {
-
-    val program = Computer.ProgramReader.readProgram("InputDay11.txt")
-
-    val task1 = task1(program)
-    val task2 = task2()
+    val task1 = task1(Computer.ProgramReader.readProgram("InputDay11.txt"))
     println(
             """
               Day11
                Task1: $task1
-               Task2: $task2
+               Task2:
             """.trimIndent())
+    task2(Computer.ProgramReader.readProgram("InputDay11.txt"))
 }
 
 fun task1(intcode: Intcode): Int {
@@ -90,4 +111,8 @@ fun task1(intcode: Intcode): Int {
 
 }
 
-fun task2() {}
+fun task2(intcode: Intcode) {
+    val robot = Robot(intcode)
+    robot.move(initialColor = 1)
+    robot.draw()
+}
