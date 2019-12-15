@@ -108,7 +108,6 @@ fun task1(intcode: Intcode): Int {
     val robot = Robot(intcode)
     robot.move()
     return robot.visited()
-
 }
 
 fun task2(intcode: Intcode) {
