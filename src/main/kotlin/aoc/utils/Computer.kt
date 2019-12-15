@@ -186,6 +186,7 @@ class Computer(private val program: Intcode, var inputSupplier: ((Int) -> Long)?
 
     fun resume() {
         state.pause = false
+        execute()
     }
 
     fun output() = state.outputs.last()
