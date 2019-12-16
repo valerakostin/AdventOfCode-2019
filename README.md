@@ -21,3 +21,4 @@ and not idiomatic, but they still return correct answers.
 |10  |[Monitoring Station](https://adventofcode.com/2019/day/10)|[Code](https://github.com/valerakostin/AdventOfCode-2019/blob/cb76f3e274fa7f1781ea5c87ec44f7f0f367d04f/src/main/kotlin/aoc/day10/Day10MonitoringStation.kt)|
 |11  |[Space Police](https://adventofcode.com/2019/day/11)|[Code](https://github.com/valerakostin/AdventOfCode-2019/blob/579824ab98302d8cdfa1c3f3b8be2a0976659e7f/src/main/kotlin/aoc/day11/SpacePoliceDay11.kt)|
 |12  |[The N-Body Problem](https://adventofcode.com/2019/day/12)|[Code](https://github.com/valerakostin/AdventOfCode-2019/blob/master/src/main/kotlin/aoc/day12/Day12N-Body%20Problem.kt)|
+|13  |[Care Package](https://adventofcode.com/2019/day/13)|[Code](https://github.com/valerakostin/AdventOfCode-2019/blob/b9a9d81522808a365114e645913f8d5889da433d/src/main/kotlin/aoc/day13/Day13CarePackage.kt)|
