@@ -23,3 +23,4 @@ and not idiomatic, but they still return correct answers.
 |12  |[The N-Body Problem](https://adventofcode.com/2019/day/12)|[Code](https://github.com/valerakostin/AdventOfCode-2019/blob/master/src/main/kotlin/aoc/day12/Day12N-Body%20Problem.kt)|
 |13  |[Care Package](https://adventofcode.com/2019/day/13)|[Code](https://github.com/valerakostin/AdventOfCode-2019/blob/b9a9d81522808a365114e645913f8d5889da433d/src/main/kotlin/aoc/day13/Day13CarePackage.kt)|
 |17  |[Set and Forget](https://adventofcode.com/2019/day/17)|[Code](https://github.com/valerakostin/AdventOfCode-2019/blob/a34dd587cf9070952bffe21f03805176ac30651d/src/main/kotlin/aoc/day17/Day17.kt)|
+|19  |[Tractor Beam](https://adventofcode.com/2019/day/19)|[Code](https://github.com/valerakostin/AdventOfCode-2019/blob/194eb2286ffaef0daef6783a151222f84fc4a37c/src/main/kotlin/aoc/day19/Day19TractorBeam.kt)|
