@@ -7,7 +7,7 @@ fun main() {
 
     val program = Computer.ProgramReader.readProgram("InputDay19.txt")
     val task1 = task1(program)
-    val task2 = task2()
+    val task2 = task2(program)
 
     println(
             """
@@ -29,9 +29,8 @@ fun task1(program: Intcode): Int {
     for (i in 0..49) {
         for (j in 0..49) {
             val v = getFieldValue(program, i, j)
-            if (v == 1L) {
+            if (v == 1L)
                 counter += 1
-            }
         }
     }
     return counter
@@ -44,4 +43,22 @@ private fun getFieldValue(program: Intcode, i: Int, j: Int): Long {
     return computer.output()
 }
 
-fun task2() {}
+
+fun task2(program: Intcode): Int {
+    val fieldSide = 99
+    for (j in 500..2_000) {
+        for (i in 400..2_000) {
+            val leftCorner = getFieldValue(program, i, j)
+            if (leftCorner == 1L) {
+                if ((getFieldValue(program, i + fieldSide, j)) == 1L) {
+                    val rightTopCorner = getFieldValue(program, i + fieldSide, j - fieldSide)
+                    if (rightTopCorner == 1L) {
+                        // left top corner i, j -fieldSide
+                        return i * 10_000 + (j - fieldSide)
+                    } else break
+                } else break
+            }
+        }
+    }
+    return 0
+}
