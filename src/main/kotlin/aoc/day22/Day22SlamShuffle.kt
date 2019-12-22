@@ -58,12 +58,7 @@ fun main() {
 }
 
 internal fun indexOf(index: Int, size: Int, operations: List<Operation>): Int {
-    var idx = index
-
-    for (op in operations) {
-        idx = op.indexOf(idx, size)
-    }
-    return idx
+    return operations.fold(index) { inx, op -> op.indexOf(inx, size) }
 }
 
 fun task1(operations: List<Operation>): Int {
