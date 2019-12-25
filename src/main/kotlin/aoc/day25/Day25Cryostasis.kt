@@ -7,7 +7,7 @@ fun main() {
 
     val program = Computer.ProgramReader.readProgram("InputDay25.txt")
     println("Day25:")
-    val robot = Robot(program, autoplayMode = false)
+    val robot = Robot(program, autoplayMode = true)
     robot.playGame()
 }
 
