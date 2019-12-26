@@ -29,13 +29,14 @@ data class Reaction(val element: Element, val components: MutableList<Element>) 
 }
 
 private fun parseReaction(rawString: String) = Reaction.Parser.parse(rawString)
+
 fun main() {
 
     val reactions =
             Utils.itemsFromResource("InputDay14.txt", ::parseReaction).associateBy { it.element.name }
 
     val task1 = task1(reactions)
-    val task2 = task2()
+    val task2 = task2(reactions)
 
     println(
             """
@@ -46,10 +47,10 @@ fun main() {
 }
 
 
-fun computeOREs(material: String, quantity: Int, reactions: Map<String, Reaction>): Int {
+internal fun computeOREs(material: String, quantity: Long, reactions: Map<String, Reaction>): Long {
     val waste = mutableMapOf<String, Long>()
 
-    fun computeOREs(material: String, quantity: Int): Int {
+    fun computeOREs(material: String, quantity: Long): Long {
         if (material == "ORE")
             return quantity
         else {
@@ -60,25 +61,36 @@ fun computeOREs(material: String, quantity: Int, reactions: Map<String, Reaction
 
                 return if (required > 0) {
                     val available = it.element.weight
-                    val scale = ceil(required.toDouble() / available.toDouble()).toInt()
+                    val scale = ceil(required.toDouble() / available.toDouble()).toLong()
                     val wasted = scale * available - required
 
                     waste[material] = waste.getOrDefault(material, 0) + wasted
-                    it.components.map { c -> computeOREs(c.name, c.weight * scale) }.sum()
-
+                    it.components.map { c -> computeOREs(c.name, c.weight.toLong() * scale) }.sum()
                 } else
                     0
-
             }
         }
         return 0
     }
-
     return computeOREs(material, quantity)
 }
 
-fun task1(reactions: Map<String, Reaction>): Int {
-    return computeOREs("FUEL", 1, reactions)
+fun task1(reactions: Map<String, Reaction>): Long {
+    return computeOREs("FUEL", 1L, reactions)
 }
 
-fun task2() {}
+fun task2(reactions: Map<String, Reaction>): Long {
+    val trillion = 1_000_000_000_000
+    var low = 0L
+    var high = trillion
+
+    while (high - low > 1) {
+        val middle = (low + high) / 2
+        val result = computeOREs("FUEL", middle, reactions)
+        if (result > trillion)
+            high = middle
+        else
+            low = middle
+    }
+    return low
+}
