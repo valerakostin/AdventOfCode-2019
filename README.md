@@ -27,3 +27,4 @@ and not idiomatic, but they still return correct answers.
 |19  |[Tractor Beam](https://adventofcode.com/2019/day/19)|[Code](https://github.com/valerakostin/AdventOfCode-2019/blob/194eb2286ffaef0daef6783a151222f84fc4a37c/src/main/kotlin/aoc/day19/Day19TractorBeam.kt)|
 |22  |[Slam Shuffle](https://adventofcode.com/2019/day/22)|[Code Part1](https://github.com/valerakostin/AdventOfCode-2019/blob/57655acf78cbb16f1c8b9e5b089996c694bb41ae/src/main/kotlin/aoc/day22/Day22SlamShuffle.kt)|
 |24  |[Planet of Discord](https://adventofcode.com/2019/day/24)|[Code Part1](https://github.com/valerakostin/AdventOfCode-2019/blob/master/src/main/kotlin/aoc/day24/Day24PlanetOfDiscord.kt)|
+|25  |[Cryostasis](https://adventofcode.com/2019/day/24)|[Code](https://github.com/valerakostin/AdventOfCode-2019/blob/master/src/main/kotlin/aoc/day25/Day25Cryostasis.kt)|
