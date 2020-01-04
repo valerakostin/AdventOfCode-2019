@@ -2,9 +2,6 @@ package aoc.day20
 
 import aoc.utils.Utils
 
-
-internal typealias  Path = MutableList<Loc>
-
 internal typealias Name = String
 
 internal data class Portal(val name: Name, val loc: Loc)
@@ -23,10 +20,10 @@ internal class DonutMaze(private val portals: Map<Loc, Name>, private val fields
         for ((entryLoc, entryName) in portals) {
             for ((exitLoc, exitName) in portals) {
                 if (entryLoc != exitLoc) {
-                    val path = pathBetween(entryLoc, exitLoc)
-                    if (path != null) {
+                    val distance = distanceBetween(entryLoc, exitLoc)
+                    if (distance != null) {
                         val segment = Pair(Portal(entryName, entryLoc), Portal(exitName, exitLoc))
-                        connections[segment] = path.size
+                        connections[segment] = distance
                     }
                 }
             }
@@ -81,33 +78,31 @@ internal class DonutMaze(private val portals: Map<Loc, Name>, private val fields
     }
 
 
-    private fun pathBetween(portalEntrance: Loc, portalExit: Loc): Path? {
-        val paths = mutableListOf<Path>()
-        val visited = mutableSetOf<Loc>()
+    private fun distanceBetween(portalEntrance: Loc, portalExit: Loc): Int? {
 
         fun isNeighbour(loc: Loc) = fields.contains(loc)
 
+        fun computeDistance(): Int? {
+            var workSet = portalEntrance.neighbours().filter { isNeighbour(it) }
+                    .toSet()
+            val visited = mutableSetOf(portalEntrance)
+            var distance = 1
 
-        fun traversePaths(from: Loc, to: Loc, path: Path) {
-            visited.add(from)
-            if (from == to) {
-                paths.add(path.toMutableList())
-                visited.remove(from)
-            }
-
-            val neighbours = from.neighbours().filter { isNeighbour(it) }
-
-            for (loc in neighbours) {
-                if (loc !in visited) {
-                    path.add(loc)
-                    traversePaths(loc, to, path)
-                    path.remove(loc)
+            while (workSet.isNotEmpty()) {
+                if (workSet.contains(portalExit))
+                    return distance
+                else {
+                    visited.addAll(workSet)
+                    workSet = workSet
+                            .flatMap { it.neighbours() }
+                            .filter { isNeighbour(it) && it !in visited }
+                            .toSet()
+                    distance += 1
                 }
             }
+            return null
         }
-        traversePaths(portalEntrance, portalExit, mutableListOf())
-
-        return paths.minBy { it.size }
+        return computeDistance()
     }
 
 
