@@ -12,69 +12,78 @@ internal data class Loc(val x: Int, val y: Int) {
     }
 }
 
+internal data class PathElement(val entrance: Portal, val exit: Portal, val length: Int)
+
 internal class DonutMaze(private val portals: Map<Loc, Name>, private val fields: Set<Loc>) {
 
-    private fun computeConnections(): Map<Pair<Portal, Portal>, Int> {
-        val connections = mutableMapOf<Pair<Portal, Portal>, Int>()
+    private fun computeConnections(): List<PathElement> {
 
+        val pathElements = mutableListOf<PathElement>()
         for ((entryLoc, entryName) in portals) {
             for ((exitLoc, exitName) in portals) {
                 if (entryLoc != exitLoc) {
                     val distance = distanceBetween(entryLoc, exitLoc)
                     if (distance != null) {
-                        val segment = Pair(Portal(entryName, entryLoc), Portal(exitName, exitLoc))
-                        connections[segment] = distance
+                        pathElements.add(PathElement(Portal(entryName, entryLoc), Portal(exitName, exitLoc), distance))
                     }
                 }
             }
         }
-        return connections
+        return pathElements
     }
 
-    fun minDistanceBetweenPortals(from: Name, to: Name): Int {
-        val paths = mutableListOf<List<Portal>>()
-        val visited = mutableSetOf<Loc>()
-        val computeConnections = computeConnections()
+    fun minDistanceBetweenPortals(): Int? {
+        val mapping = portals.entries.groupBy({ it.value }) { it.key }
 
-        fun Portal.neighbours() = computeConnections.keys.filter { (it.first.name == this.name) }
+        val entrance = mapping.filter { it.value.size == 1 }
+
+        if (entrance.size == 2) {
+            val pathElements = computeConnections()
+
+            fun Portal.neighbours() = pathElements
+                    .filter { it.entrance.name == this.name && it.entrance.loc != this.loc }
+
+            val (startPortal, endPortal) = startAndEndPortals(entrance)
+
+            val inputElements = pathElements
+                    .filter { (it.entrance.name == startPortal.name) }
+
+            // remove direct portals AA-ZZ
+            val directPortals = inputElements.filter { it.exit.name == endPortal.name }
+            var workSet = inputElements.filter { it.exit.name != endPortal.name }.toSet()
 
 
-        fun getDistance(portal: Pair<Portal, Portal>): Int? {
-            return computeConnections.entries.find { it.key.first.name == portal.first.name && it.key.second.name == portal.second.name }?.component2()
-        }
+            val visited = mutableSetOf(startPortal.loc)
 
-        fun computeDistance(path: List<Portal>): Int {
-            val zipWithNext = path.zipWithNext()
-            return zipWithNext.mapNotNull { getDistance(it) }.sum() + path.size - 2
-        }
+            while (workSet.isNotEmpty()) {
+                val destination = workSet.find { it.exit == endPortal }
+                if (destination != null) {
+                    val directPath = directPortals.minBy { it.length }
+                    return directPath?.length?.coerceAtMost(destination.length) ?: destination.length
+                } else {
+                    workSet.map { it.exit.loc }.forEach { visited.add(it) }
 
-        fun paths(f: Portal, t: Portal, portals: MutableList<Portal>) {
-            visited.add(f.loc)
-            if (f == t) {
-                paths.add(portals.toMutableList())
-                visited.remove(f.loc)
-                portals.remove(f)
-            }
 
-            val neighbours = f.neighbours()
+                    val newWorkSet = mutableSetOf<PathElement>()
 
-            for (neighbour in neighbours) {
-                if (neighbour.second.loc !in visited) {
-                    if ((portals.size == 1 || (portals.size > 1 && portals.last().loc != neighbour.first.loc))) {
-                        portals.add(neighbour.second)
-                        paths(neighbour.second, t, portals)
-                        portals.remove(neighbour.second)
+                    for (item in workSet) {
+                        val items = item.exit.neighbours().filter { it.exit.loc !in visited }
+                                .map { PathElement(item.entrance, it.exit, item.length + it.length + 1) }
+                                .toSet()
+                        newWorkSet.addAll(items)
                     }
+                    workSet = newWorkSet
                 }
             }
         }
+        return null
+    }
 
-        val fromPortalSegment = computeConnections.keys.find { it.first.name == from }
-        val toPortalSegment = computeConnections.keys.find { it.first.name == to }
-        if (fromPortalSegment != null && toPortalSegment != null)
-            paths(fromPortalSegment.first, toPortalSegment.first, mutableListOf(fromPortalSegment.first))
-
-        return paths.map { computeDistance(it) }.min()!!
+    private fun startAndEndPortals(entrance: Map<Name, List<Loc>>): Pair<Portal, Portal> {
+        val list = entrance.toList()
+        val startPortal = Portal(list[0].first, list[0].second[0])
+        val endPortal = Portal(list[1].first, list[1].second[0])
+        return Pair(startPortal, endPortal)
     }
 
 
@@ -261,7 +270,7 @@ fun main() {
             Utils.linesFromResource("InputDay20.txt")
     val maze = DonutMaze.Parser.createMaze(lines)
 
-    val task1 = maze.minDistanceBetweenPortals("AA", "ZZ")
+    val task1 = maze.minDistanceBetweenPortals()
     val task2 = task2()
 
     println(
