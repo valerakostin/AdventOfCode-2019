@@ -32,7 +32,7 @@ internal class DonutMaze(private val portals: Map<Loc, Name>, private val fields
         return pathElements
     }
 
-    fun minDistanceBetweenPortals(): Int? {
+    fun minDistanceBetweenStartAndEndPortals(): Int? {
         val mapping = portals.entries.groupBy({ it.value }) { it.key }
 
         val entrance = mapping.filter { it.value.size == 1 }
@@ -270,7 +270,7 @@ fun main() {
             Utils.linesFromResource("InputDay20.txt")
     val maze = DonutMaze.Parser.createMaze(lines)
 
-    val task1 = maze.minDistanceBetweenPortals()
+    val task1 = maze.minDistanceBetweenStartAndEndPortals()
     val task2 = task2()
 
     println(

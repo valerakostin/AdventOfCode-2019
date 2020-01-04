@@ -30,7 +30,7 @@ internal class DonutMazeTest {
         """.trimIndent()
         val toList = input.split("\n").toList()
         val maze = DonutMaze.Parser.createMaze(toList)
-        val minDistanceBetweenPortals = maze.minDistanceBetweenPortals()
+        val minDistanceBetweenPortals = maze.minDistanceBetweenStartAndEndPortals()
         assertEquals(23, minDistanceBetweenPortals)
     }
 
@@ -78,7 +78,7 @@ internal class DonutMazeTest {
 
         val toList = input.split("\n").toList()
         val maze = DonutMaze.Parser.createMaze(toList)
-        val minDistanceBetweenPortals = maze.minDistanceBetweenPortals()
+        val minDistanceBetweenPortals = maze.minDistanceBetweenStartAndEndPortals()
         assertEquals(58, minDistanceBetweenPortals)
     }
 
@@ -89,7 +89,7 @@ internal class DonutMazeTest {
                 Utils.linesFromResource("InputDay20.txt")
         val maze = DonutMaze.Parser.createMaze(lines)
 
-        val minDistanceBetweenPortals = maze.minDistanceBetweenPortals()
+        val minDistanceBetweenPortals = maze.minDistanceBetweenStartAndEndPortals()
         assertEquals(668, minDistanceBetweenPortals)
     }
 }
