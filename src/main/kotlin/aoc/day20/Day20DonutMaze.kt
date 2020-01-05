@@ -115,19 +115,18 @@ internal class DonutMaze(private val portals: Map<Loc, Name>, private val fields
     }
 
 
-    object Parser {
+    companion object Parser {
+        private const val SPACE = '.'
+        private const val WALL = '#'
         fun createMaze(lines: List<String>): DonutMaze {
             val verticalRange = verticalRange(lines)
             val horizontalRange = horizontalRange(lines)
 
             val innerPortals = innerPortals(horizontalRange, verticalRange, lines)
             val outerPortals = entrances(lines)
-            val allPortal = mutableMapOf<Loc, Name>()
-            allPortal.putAll(innerPortals)
-            allPortal.putAll(outerPortals)
 
             val freeLocations = collectFields(lines)
-            return DonutMaze(allPortal, freeLocations)
+            return DonutMaze(innerPortals + outerPortals, freeLocations)
         }
 
         private fun collectFields(lines: List<String>): Set<Loc> {
@@ -136,7 +135,7 @@ internal class DonutMaze(private val portals: Map<Loc, Name>, private val fields
             if (maxLength != null) {
                 for (line in 2 until lines.size - 2) {
                     for (x in 0 until maxLength) {
-                        if (lines[line].length > x && lines[line][x] == '.')
+                        if (lines[line].length > x && lines[line][x] == SPACE)
                             locations.add(Loc(x, line))
                     }
                 }
@@ -247,25 +246,24 @@ internal class DonutMaze(private val portals: Map<Loc, Name>, private val fields
         private fun horizontalRange(input: List<String>): IntRange {
             val middle = input.size / 2
 
-            val left = (2..input[middle].length).first { input[middle][it] != '.' && input[middle][it] != '#' }
+            val left = (2..input[middle].length).first { input[middle][it] != SPACE && input[middle][it] != WALL }
 
-            val right = (input[middle].length - 3 downTo 2).first { input[middle][it] != '.' && input[middle][it] != '#' }
+            val right = (input[middle].length - 3 downTo 2).first { input[middle][it] != SPACE && input[middle][it] != WALL }
             return left..right
         }
 
         private fun verticalRange(input: List<String>): IntRange {
             val middle = input[3].length / 2
 
-            val upper = (2..input.size).first { input[it][middle] != '.' && input[it][middle] != '#' }
+            val upper = (2..input.size).first { input[it][middle] != SPACE && input[it][middle] != WALL }
 
-            val lower = (input.size - 3 downTo 2).first { input[it][middle] != '.' && input[it][middle] != '#' }
+            val lower = (input.size - 3 downTo 2).first { input[it][middle] != SPACE && input[it][middle] != WALL }
             return upper..lower
         }
     }
 }
 
 fun main() {
-
     val lines =
             Utils.linesFromResource("InputDay20.txt")
     val maze = DonutMaze.Parser.createMaze(lines)
@@ -280,5 +278,3 @@ fun main() {
                Task2: $task2
             """.trimIndent())
 }
-
-fun task2() {}
