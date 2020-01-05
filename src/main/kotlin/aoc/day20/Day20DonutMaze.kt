@@ -5,6 +5,9 @@ import aoc.utils.Utils
 internal typealias Name = String
 
 internal data class Portal(val name: Name, val loc: Loc)
+internal data class RecursivePortal(val portal: Portal, val depth: Int) {
+    val name = portal.name
+}
 
 internal data class Loc(val x: Int, val y: Int) {
     fun neighbours(): List<Loc> {
@@ -14,7 +17,12 @@ internal data class Loc(val x: Int, val y: Int) {
 
 internal data class PathElement(val entrance: Portal, val exit: Portal, val length: Int)
 
+internal data class RecursivePathElement(val entrance: Portal, val exit: Portal, val length: Int, val depth: Int)
+
 internal class DonutMaze(private val portals: Map<Loc, Name>, private val fields: Set<Loc>) {
+
+    private val maxX = fields.maxBy { it.x }?.x
+    private val maxY = fields.maxBy { it.y }?.y
 
     private fun computeConnections(): List<PathElement> {
 
@@ -32,18 +40,40 @@ internal class DonutMaze(private val portals: Map<Loc, Name>, private val fields
         return pathElements
     }
 
+
+    private fun computeRecursiveConnections(): List<RecursivePathElement> {
+
+        val pathElements = mutableListOf<RecursivePathElement>()
+        for ((entryLoc, entryName) in portals) {
+            for ((exitLoc, exitName) in portals) {
+                if (entryLoc != exitLoc) {
+                    val distance = distanceBetween(entryLoc, exitLoc)
+                    if (distance != null) {
+                        val depth = if (isOuter(exitLoc)) -1 else 1
+                        pathElements.add(RecursivePathElement(Portal(entryName, entryLoc), Portal(exitName, exitLoc), distance, depth))
+                    }
+                }
+            }
+        }
+        return pathElements
+    }
+
+    private fun isOuter(loc: Loc): Boolean {
+
+        return loc.x == 2 || loc.x == maxX || loc.y == 2 || loc.y == maxY
+    }
+
     fun minDistanceBetweenStartAndEndPortals(): Int? {
-        val mapping = portals.entries.groupBy({ it.value }) { it.key }
 
-        val entrance = mapping.filter { it.value.size == 1 }
+        val startAndEnd = startAndEndPortals()
+        if (startAndEnd != null) {
 
-        if (entrance.size == 2) {
+            val startPortal = startAndEnd.first
+            val endPortal = startAndEnd.second
             val pathElements = computeConnections()
 
             fun Portal.neighbours() = pathElements
                     .filter { it.entrance.name == this.name && it.entrance.loc != this.loc }
-
-            val (startPortal, endPortal) = startAndEndPortals(entrance)
 
             val inputElements = pathElements
                     .filter { (it.entrance.name == startPortal.name) }
@@ -79,11 +109,84 @@ internal class DonutMaze(private val portals: Map<Loc, Name>, private val fields
         return null
     }
 
-    private fun startAndEndPortals(entrance: Map<Name, List<Loc>>): Pair<Portal, Portal> {
-        val list = entrance.toList()
-        val startPortal = Portal(list[0].first, list[0].second[0])
-        val endPortal = Portal(list[1].first, list[1].second[0])
-        return Pair(startPortal, endPortal)
+    private fun startAndEndPortals(): Pair<Portal, Portal>? {
+        val mapping = portals.entries.groupBy({ it.value }) { it.key }
+
+        val entrance = mapping.filter { it.value.size == 1 }.toSortedMap()
+        if (entrance.size == 2) {
+            val list = entrance.toList()
+            val startPortal = Portal(list[0].first, list[0].second[0])
+            val endPortal = Portal(list[1].first, list[1].second[0])
+            return Pair(startPortal, endPortal)
+        }
+        return null
+    }
+
+    private fun RecursivePathElement.neighbours(startPortal: RecursivePortal, endPortal: RecursivePortal, element: List<RecursivePathElement>): List<RecursivePathElement> {
+        return element
+                .filter {
+                    it.entrance.name != startPortal.name &&
+                            it.entrance.name == endPortal.name
+                    it.entrance.name == this.exit.name &&
+                            it.entrance.loc != this.exit.loc
+                }
+    }
+
+    fun minRecursiveDistanceBetweenStartAndEndPortals(): Int? {
+
+        val startAndEnd = startAndEndPortals()
+        if (startAndEnd != null) {
+            val startPortal = RecursivePortal(startAndEnd.first, 0)
+            val endPortal = RecursivePortal(startAndEnd.second, 0)
+
+            val pathElements = computeRecursiveConnections()
+
+            val inputElements = pathElements
+                    .filter { (it.entrance.name == startPortal.name) }
+
+            val exits = pathElements
+                    .filter { it.exit.name == endPortal.name }
+                    .groupBy({ it.entrance.name }, { it.length })
+                    .entries.map { it.key to it.value.min() }.toMap()
+
+            var workSet = inputElements
+                    .filter { it.exit.name != endPortal.name && it.depth > 0 }
+                    .toSet()
+
+            val visited = mutableSetOf(startPortal)
+
+            while (workSet.isNotEmpty()) {
+
+                val result = workSet
+                        .filter { it.depth == 0 && exits.containsKey(it.exit.name) }
+                        .map { it.length + 1 + (exits[it.exit.name] ?: error("is not null, checked in filter")) }
+                        .min()
+
+                if (result != null)
+                    return result
+
+                workSet.map { RecursivePortal(it.exit, it.depth) }.forEach { visited.add(it) }
+
+                val newWorkSet = mutableSetOf<RecursivePathElement>()
+
+                for (item in workSet) {
+                    val neighbours = item.neighbours(startPortal, endPortal, pathElements)
+                            .filter { RecursivePortal(it.exit, it.depth) !in visited }
+                            .map {
+                                RecursivePathElement(
+                                        item.entrance,
+                                        it.exit,
+                                        item.length + it.length + 1,
+                                        it.depth + item.depth)
+                            }
+                            .filter { it.depth >= 0 && (it.exit.name != endPortal.name || it.depth == 0) }
+                            .toSet()
+                    newWorkSet.addAll(neighbours)
+                }
+                workSet = newWorkSet
+            }
+        }
+        return null
     }
 
 
@@ -266,10 +369,10 @@ internal class DonutMaze(private val portals: Map<Loc, Name>, private val fields
 fun main() {
     val lines =
             Utils.linesFromResource("InputDay20.txt")
-    val maze = DonutMaze.Parser.createMaze(lines)
+    val maze = DonutMaze.createMaze(lines)
 
     val task1 = maze.minDistanceBetweenStartAndEndPortals()
-    val task2 = task2()
+    val task2 = maze.minRecursiveDistanceBetweenStartAndEndPortals()
 
     println(
             """

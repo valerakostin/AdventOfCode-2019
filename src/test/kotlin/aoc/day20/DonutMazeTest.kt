@@ -29,7 +29,7 @@ internal class DonutMazeTest {
                          Z
         """.trimIndent()
         val toList = input.split("\n").toList()
-        val maze = DonutMaze.Parser.createMaze(toList)
+        val maze = DonutMaze.createMaze(toList)
         val minDistanceBetweenPortals = maze.minDistanceBetweenStartAndEndPortals()
         assertEquals(23, minDistanceBetweenPortals)
     }
@@ -77,7 +77,7 @@ internal class DonutMazeTest {
             """.trimIndent()
 
         val toList = input.split("\n").toList()
-        val maze = DonutMaze.Parser.createMaze(toList)
+        val maze = DonutMaze.createMaze(toList)
         val minDistanceBetweenPortals = maze.minDistanceBetweenStartAndEndPortals()
         assertEquals(58, minDistanceBetweenPortals)
     }
@@ -87,9 +87,21 @@ internal class DonutMazeTest {
     {
         val lines =
                 Utils.linesFromResource("InputDay20.txt")
-        val maze = DonutMaze.Parser.createMaze(lines)
+        val maze = DonutMaze.createMaze(lines)
 
         val minDistanceBetweenPortals = maze.minDistanceBetweenStartAndEndPortals()
         assertEquals(668, minDistanceBetweenPortals)
+    }
+
+
+    @Test
+    fun `task2  should return 7778`()
+    {
+        val lines =
+                Utils.linesFromResource("InputDay20.txt")
+        val maze = DonutMaze.createMaze(lines)
+
+        val minDistanceBetweenPortals = maze.minRecursiveDistanceBetweenStartAndEndPortals()
+        assertEquals(7778, minDistanceBetweenPortals)
     }
 }
