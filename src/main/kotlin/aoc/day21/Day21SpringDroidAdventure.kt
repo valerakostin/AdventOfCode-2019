@@ -8,7 +8,8 @@ fun main() {
     val program = Computer.ProgramReader.readProgram("InputDay21.txt")
 
     val task1 = task1(program)
-    val task2 = task2()
+    val program1 = Computer.ProgramReader.readProgram("InputDay21.txt")
+    val task2 = task2(program1)
 
     println(
             """
@@ -29,6 +30,10 @@ internal fun task1(program: Intcode): Long {
             
 """.trimIndent()
 
+    return executeScript(script, program)
+}
+
+private fun executeScript(script: String, program: Intcode): Long {
     fun input(`in`: Int): Long {
         val inputOffset = 20
         val char = script[`in` - inputOffset]
@@ -38,8 +43,24 @@ internal fun task1(program: Intcode): Long {
     val computer = Computer(program, resumeOnOutput = true, inputSupplier = ::input)
     while (!computer.isReady()) {
         computer.resume()
+       // print(computer.output().toChar())
     }
     return computer.output()
 }
 
-fun task2() {}
+fun task2(program: Intcode): Long {
+    val script = """ 
+    OR A J
+    AND B J
+    AND C J
+    NOT J J
+    AND D J
+    OR E T
+    OR H T
+    AND T J
+    RUN
+            
+""".trimIndent()
+
+    return executeScript(script, program)
+}
