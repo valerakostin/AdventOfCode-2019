@@ -2,22 +2,20 @@ package aoc.day23
 
 import aoc.utils.Computer
 import aoc.utils.Network
-import java.lang.Thread.sleep
 
 fun main() {
 
-    val task1 = task1()
-    val task2 = task2()
-
+    val result = simulateNetwork()
     println(
             """
               Day23
-               Task1: $task1
-               Task2: $task2
+               Task1: ${result.first}
+               Task2: ${result.second}
             """.trimIndent())
 }
 
-val inputQueue = mutableMapOf<Long, MutableList<Long>>()
+private val inputQueue = mutableMapOf<Long, MutableList<Long>>()
+private const val natAddress = 255L
 
 private fun createComputer(id: Int): Computer {
 
@@ -37,31 +35,53 @@ private fun createComputer(id: Int): Computer {
     return Computer(program, inputSupplier = ::inputSupplier, network = Network(id, inputQueue))
 }
 
-fun task1(): Long {
+fun simulateNetwork(): Pair<Long, Long> {
     val networkSize = 50
-    val natAddress = 255L
     for (i in 0 until networkSize) {
         inputQueue[i.toLong()] = mutableListOf()
-
-        inputQueue[255L] = mutableListOf()
+        inputQueue[natAddress] = mutableListOf()
     }
 
     val network = (0 until networkSize).map { createComputer(it) }.toList()
+    val cache = mutableSetOf<Long>()
+    while (true) {
+        for (computer in network) {
 
-    for (computer in network) {
+            Thread(Runnable {
+                if (!computer.isReady()) {
+                    computer.execute()
+                }
+            }).start()
+        }
+        var task1: Long? = null
 
-        Thread(Runnable {
-            if (!computer.isReady()) {
-                computer.execute()
+        while (true) {
+
+            if (isIdle()) {
+                val natData = inputQueue[natAddress]
+                if (natData != null) {
+                    val x = natData[natData.size - 2]
+                    val y = natData[natData.size - 1]
+                    natData.clear()
+
+                    inputQueue[0]?.add(x)
+                    inputQueue[0]?.add(y)
+
+                    if (task1 == null)
+                        task1 = y
+
+                    if (cache.contains(y)) {
+                        return Pair(task1, y)
+                    } else
+                        cache.add(y)
+
+                }
             }
-        }).start()
+        }
     }
-
-    while (inputQueue[natAddress]?.size != 2) {
-        sleep(100)
-    }
-
-    return inputQueue[natAddress]!![1]
 }
 
-fun task2() {}
+private fun isIdle(): Boolean {
+    val filtered = inputQueue.entries.filter { it.value.size >= 2 }
+    return filtered.size == 1 && filtered[0].key == natAddress
+}
