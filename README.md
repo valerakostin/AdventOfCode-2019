@@ -30,5 +30,6 @@ and not idiomatic, but they still return correct answers.
 |20  |[Donut Maze](https://adventofcode.com/2019/day/20)|[Code](https://github.com/valerakostin/AdventOfCode-2019/blob/master/src/main/kotlin/aoc/day20/Day20DonutMaze.kt)|
 |21  |[Springdroid Adventure](https://adventofcode.com/2019/day/21)|[Code](https://github.com/valerakostin/AdventOfCode-2019/blob/master/src/main/kotlin/aoc/day21/Day21SpringDroidAdventure.kt)|
 |22  |[Slam Shuffle](https://adventofcode.com/2019/day/22)|[Code Part1](https://github.com/valerakostin/AdventOfCode-2019/blob/57655acf78cbb16f1c8b9e5b089996c694bb41ae/src/main/kotlin/aoc/day22/Day22SlamShuffle.kt)|
+|23  |[Category Six](https://adventofcode.com/2019/day/23)|[Code](https://github.com/valerakostin/AdventOfCode-2019/blob/9eca3343d396b69739138e20d0610e6bcd6ec2a1/src/main/kotlin/aoc/day23/Day23CategorySix.kt)|
 |24  |[Planet of Discord](https://adventofcode.com/2019/day/24)|[Code Part1](https://github.com/valerakostin/AdventOfCode-2019/blob/master/src/main/kotlin/aoc/day24/Day24PlanetOfDiscord.kt)|
 |25  |[Cryostasis](https://adventofcode.com/2019/day/24)|[Code](https://github.com/valerakostin/AdventOfCode-2019/blob/master/src/main/kotlin/aoc/day25/Day25Cryostasis.kt)|
