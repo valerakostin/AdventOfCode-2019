@@ -3,6 +3,12 @@ package aoc.utils
 
 typealias Intcode = MutableMap<Int, Long>
 
+data class Network(val address: Int, private val packetQueue: MutableMap<Long, MutableList<Long>>) {
+    fun sendPacket(toAddress: Long, value: Long) {
+        packetQueue[toAddress]?.add(value)
+    }
+}
+
 private data class ComputerState(var counter: Int = 0,
                                  var inputCounter: Int = 0,
                                  var relativeAddressBase: Int = 0,
@@ -34,14 +40,13 @@ fun Intcode.read(pointer: Int): Long {
     return this.getOrDefault(pointer, 0L)
 }
 
-fun Intcode.write(pointer: Long, value: Long) = write(pointer.toInt(), value)
 fun Intcode.write(pointer: Int, value: Long) {
     if (pointer < 0)
         throw IllegalArgumentException("Pointer can not be negative $pointer")
     this[pointer] = value
 }
 
-class Computer(private val program: Intcode, var inputSupplier: ((Int) -> Long)? = null, val resumeOnOutput: Boolean = false) {
+class Computer(private val program: Intcode, var inputSupplier: ((Int) -> Long)? = null, val resumeOnOutput: Boolean = false, val network: Network? = null) {
     private val state = ComputerState()
 
 
@@ -93,6 +98,19 @@ class Computer(private val program: Intcode, var inputSupplier: ((Int) -> Long)?
         val operand1Address = readValue(state.counter + 1, mode)
 
         state.addOutput(operand1Address)
+
+        if (network != null) {
+            val size = outputs().size
+            if (size % 3 == 2) {
+                val toAddress = outputs()[size - 2]
+                val x = outputs()[size - 1]
+                network.sendPacket(toAddress, x)
+            } else if (size % 3 == 0) {
+                val toAddress = outputs()[size - 3]
+                val y = outputs()[size - 1]
+                network.sendPacket(toAddress, y)
+            }
+        }
         state.increaseCounter(2)
         state.increaseInputCounter()
 
